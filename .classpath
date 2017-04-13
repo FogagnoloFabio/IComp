@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
+	<classpathentry excluding="it/fogagnolo/icomp/table/|it/fogagnolo/icomp/swing/regola/Tabella.java" kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="C:/Fabio/salva/IntelliComp/jna-4.1.0.jar"/>
+	<classpathentry kind="lib" path="C:/Fabio/salva/IntelliComp/jna-platform-4.1.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
