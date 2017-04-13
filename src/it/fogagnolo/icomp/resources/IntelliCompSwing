@@ -1,0 +1,22 @@
+### TabbedPane Demo ###
+
+IntelliCompSwing.accessible_description=This demo shows an example of using the JTabbedPane component.
+IntelliCompSwing.tooltip=JTabbedPane demo
+IntelliCompSwing.name=TabbedPane Demo
+
+IntelliCompSwing.bounce=<html><font color=blue><bold><center>Bouncing Babies!</center></bold></font></html>
+IntelliCompSwing.stephen=Stephen
+IntelliCompSwing.david=David
+IntelliCompSwing.matthew=Matthew
+IntelliCompSwing.ewan=Ewan
+IntelliCompSwing.blake=Blake
+IntelliCompSwing.brooke=Brooke
+IntelliCompSwing.camille=Camille
+IntelliCompSwing.miranda=Miranda
+IntelliCompSwing.miranda.tooltip=Check out the Java code on her onesie!
+
+IntelliCompSwing.label=Tab Placement:
+IntelliCompSwing.top=Top
+IntelliCompSwing.bottom=Bottom
+IntelliCompSwing.left=Left
+IntelliCompSwing.right=Right
