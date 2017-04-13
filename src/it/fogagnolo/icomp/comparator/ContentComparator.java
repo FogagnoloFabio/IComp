@@ -12,6 +12,6 @@ public class ContentComparator extends ByteArrayComparator {
         if (fi1 == null) return -1;
         if (fi2 == null) return 1;
 
-        return compare(fi1.getContent(), fi2.getContent());
+        return compare(fi1.getInitialDigest(), fi2.getInitialDigest());
     }
 }

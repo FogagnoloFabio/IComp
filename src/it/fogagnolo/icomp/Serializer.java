@@ -15,8 +15,8 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.StringTokenizer;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
 
 import it.fogagnolo.icomp.util.Base64;
 import it.fogagnolo.icomp.util.DateUtil;
@@ -31,9 +31,9 @@ public class Serializer {
         _fname = fname;
     }
 
-    public ArrayList<FileInfo> read() {
+    public ArrayList<FileInfoExt> read() {
 
-        ArrayList<FileInfo> files = new ArrayList<FileInfo>();
+        ArrayList<FileInfoExt> files = new ArrayList<FileInfoExt>();
 
         if (_fname == null) return files;
 
@@ -55,7 +55,7 @@ public class Serializer {
                 while ((riga = br.readLine()) != null) {
                     byte[] obj = Base64.decode(riga.trim());
                     ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(obj));
-                    FileInfo fi = (FileInfo) in.readObject();
+                    FileInfoExt fi = (FileInfoExt) in.readObject();
                     files.add(fi);
                     in.close();
                 }
@@ -82,9 +82,9 @@ public class Serializer {
 
     }
 
-    public HashMap<Integer, ArrayList<FileInfo>> readIntoMap() {
+    public HashMap<Integer, ArrayList<FileInfoExt>> readIntoMap() {
 
-        HashMap<Integer, ArrayList<FileInfo>> map = new HashMap<Integer, ArrayList<FileInfo>>();
+        HashMap<Integer, ArrayList<FileInfoExt>> map = new HashMap<Integer, ArrayList<FileInfoExt>>();
 
         if (_fname == null) return map;
 
@@ -106,12 +106,12 @@ public class Serializer {
                 while ((riga = br.readLine()) != null) {
                     byte[] obj = Base64.decode(riga.trim());
                     ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(obj));
-                    FileInfo fi = (FileInfo) in.readObject();
+                    FileInfoExt fi = (FileInfoExt) in.readObject();
 
-                    ArrayList<FileInfo> list = map.get(fi.getGroup());
-                    if (list == null) list = new ArrayList<FileInfo>();
+                    ArrayList<FileInfoExt> list = map.get(fi.getGruppo());
+                    if (list == null) list = new ArrayList<FileInfoExt>();
                     list.add(fi);
-                    map.put(fi.getGroup(), list);
+                    map.put(fi.getGruppo(), list);
 
                     in.close();
                 }
@@ -138,7 +138,7 @@ public class Serializer {
 
     }
 
-    public boolean write(ArrayList<FileInfo> files) {
+    public boolean write(ArrayList<FileInfoExt> files) {
 
         if (_fname == null) return true;
 
@@ -154,7 +154,7 @@ public class Serializer {
             bw.newLine();
 
             // oggetti serializzati
-            for (FileInfo fi : files) {
+            for (FileInfoExt fi : files) {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 ObjectOutput oo = new ObjectOutputStream(baos);
                 oo.writeObject(fi);
@@ -180,7 +180,7 @@ public class Serializer {
 
     }
 
-    public boolean write(HashMap<Integer, ArrayList<FileInfo>> map) {
+    public boolean write(HashMap<Integer, ArrayList<FileInfoExt>> map) {
 
         if (_fname == null) return true;
 
@@ -196,10 +196,10 @@ public class Serializer {
             bw.newLine();
 
             // oggetti serializzati
-            Iterator<Entry<Integer, ArrayList<FileInfo>>> it = map.entrySet().iterator();
+            Iterator<Entry<Integer, ArrayList<FileInfoExt>>> it = map.entrySet().iterator();
             while (it.hasNext()) {
-                ArrayList<FileInfo> files = it.next().getValue();
-                for (FileInfo fi : files) {
+                ArrayList<FileInfoExt> files = it.next().getValue();
+                for (FileInfoExt fi : files) {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     ObjectOutput oo = new ObjectOutputStream(baos);
                     oo.writeObject(fi);

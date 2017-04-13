@@ -18,49 +18,49 @@ import it.fogagnolo.icomp.util.DateUtil;
 
 public class IntelliCompFinder {
 
-    public static final String         VERSION                      = " v1.7";
-    private static final int           MODULO                       = 100;
-    private static final int           MODULO_FILES                 = 1000;
+    public static final String            VERSION                      = " v1.7";
+    private static final int              MODULO                       = 100;
+    private static final int              MODULO_FILES                 = 1000;
 
     // parametri di configurazione
-    private static final String        PARAM_ROOT                   = "-r";
-    private static final String        PARAM_EXCLUDE                = "-e";
-    private static final String        PARAM_FILTER                 = "-fi";
-    private static final String        PARAM_DEBUG                  = "-d";
-    private static final String        PARAM_OFFSET                 = "-o";
-    private static final String        PARAM_LENGTH                 = "-l";
-    private static final String        PARAM_CONTENT_LENGTH         = "-con";
-    private static final String        PARAM_BUFFER_LENGTH          = "-b";
-    private static final String        PARAM_INPUT_FILE             = "-i";
-    private static final String        PARAM_SAVE_FILE              = "-s";
-    private static final String        PARAM_FOLLOW_SYMLINK         = "-fo";
-    private static final String        PARAM_COMPARE                = "-com";
-    private static final String        PARAM_COMPARE_NAME           = "n";
-    private static final String        PARAM_COMPARE_SIZE           = "s";
-    private static final String        PARAM_COMPARE_INITIAL_DIGEST = "i";
-    private static final String        PARAM_COMPARE_FAST_DIGEST    = "fa";
-    private static final String        PARAM_COMPARE_FULL_DIGEST    = "fu";
+    private static final String           PARAM_ROOT                   = "-r";
+    private static final String           PARAM_EXCLUDE                = "-e";
+    private static final String           PARAM_FILTER                 = "-fi";
+    private static final String           PARAM_DEBUG                  = "-d";
+    private static final String           PARAM_OFFSET                 = "-o";
+    private static final String           PARAM_LENGTH                 = "-l";
+    private static final String           PARAM_CONTENT_LENGTH         = "-con";
+    private static final String           PARAM_BUFFER_LENGTH          = "-b";
+    private static final String           PARAM_INPUT_FILE             = "-i";
+    private static final String           PARAM_SAVE_FILE              = "-s";
+    private static final String           PARAM_FOLLOW_SYMLINK         = "-fo";
+    private static final String           PARAM_COMPARE                = "-com";
+    private static final String           PARAM_COMPARE_NAME           = "n";
+    private static final String           PARAM_COMPARE_SIZE           = "s";
+    private static final String           PARAM_COMPARE_INITIAL_DIGEST = "i";
+    private static final String           PARAM_COMPARE_FAST_DIGEST    = "fa";
+    private static final String           PARAM_COMPARE_FULL_DIGEST    = "fu";
 
     // parametri
-    private static ArrayList<File>     _roots                       = new ArrayList<File>();
-    private static ArrayList<String>   _exclude                     = new ArrayList<String>();
-    private static String              _filter                      = "";
-    public static long                 _offset                      = 0;
-    public static long                 _length                      = -1;
-    public static int                  _contentLength               = 1024;
-    public static int                  _bufferLength                = 8192;
-    private static boolean             _swDebug                     = false;
-    private static ArrayList<FileInfo> _files                       = null;
-    private static String              _inputfile                   = null;
-    private static String              _savefile                    = null;
-    private static boolean             _compareName                 = false;
-    private static boolean             _compareSize                 = false;
-    private static boolean             _compareInitialDigest        = false;
-    private static boolean             _compareFastDigest           = false;
-    private static boolean             _compareFullDigest           = false;
-    private static boolean             _followSymlink               = false;
+    private static ArrayList<File>        _roots                       = new ArrayList<File>();
+    private static ArrayList<String>      _exclude                     = new ArrayList<String>();
+    private static String                 _filter                      = "";
+    public static long                    _offset                      = 0;
+    public static long                    _length                      = -1;
+    public static int                     _contentLength               = 1024;
+    public static int                     _bufferLength                = 8192;
+    private static boolean                _swDebug                     = false;
+    private static ArrayList<FileInfoExt> _files                       = null;
+    private static String                 _inputfile                   = null;
+    private static String                 _savefile                    = null;
+    private static boolean                _compareName                 = false;
+    private static boolean                _compareSize                 = false;
+    private static boolean                _compareInitialDigest        = false;
+    private static boolean                _compareFastDigest           = false;
+    private static boolean                _compareFullDigest           = false;
+    private static boolean                _followSymlink               = false;
 
-    private static int                 _num                         = 0;
+    private static int                    _num                         = 0;
 
     public static void main(String[] args) {
 
@@ -277,7 +277,7 @@ public class IntelliCompFinder {
         System.out.println(DateUtil.getCurrentDate() + " getFileList: " + addedFile + " item trovati");
     }
 
-    private static int getFileList(ArrayList<FileInfo> list, File fileObj, ArrayList<String> exclude, String filter) {
+    private static int getFileList(ArrayList<FileInfoExt> list, File fileObj, ArrayList<String> exclude, String filter) {
 
         FileFilter fileFilter = new FileFilter();
 
@@ -296,12 +296,12 @@ public class IntelliCompFinder {
                 } else {
                     if (f.getName().toLowerCase().endsWith(filter)) {
                         if (_followSymlink) {
-                            list.add(new FileInfo(f));
+                            list.add(new FileInfoExt(f));
                             ++addedFile;
                             incrementNumFiles();
                         } else {
                             if (!isLink(f)) {
-                                list.add(new FileInfo(f));
+                                list.add(new FileInfoExt(f));
                                 ++addedFile;
                                 incrementNumFiles();
                             }
@@ -350,7 +350,7 @@ public class IntelliCompFinder {
         System.out.println(DateUtil.getCurrentDate() + " caricamento content....");
         _num = 0;
         for (FileInfo fi : _files) {
-            fi.getContent();
+            fi.getInitialDigest();
             incrementNum();
         }
     }
@@ -428,8 +428,8 @@ public class IntelliCompFinder {
                 if (comparator.compare(_files.get(i), fiPrev) != 0) {
                     ++groups;
                     for (int j = posPrev; j < i; j++) {
-                        FileInfo fi = _files.get(j);
-                        fi.setGroup(groups);
+                        FileInfoExt fi = _files.get(j);
+                        fi.setGruppo(groups);
                         System.out.println(fi.toStringFinder());
                     }
                     posPrev = i;
@@ -439,8 +439,8 @@ public class IntelliCompFinder {
             // giro fuori dal loop per gestire l'ultimo elemento
             ++groups;
             for (int j = posPrev; j < _files.size(); j++) {
-                FileInfo fi = _files.get(j);
-                fi.setGroup(groups);
+                FileInfoExt fi = _files.get(j);
+                fi.setGruppo(groups);
                 System.out.println(fi.toStringFinder());
             }
         }

@@ -237,7 +237,7 @@ public final class Base64 {
 
         // encodedData[encodedIndex] = 0xa;
 
-        return new String(encodedData);
+        return new String(encodedData).trim();
     }
 
     /**

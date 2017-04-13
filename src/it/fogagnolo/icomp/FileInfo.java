@@ -14,26 +14,24 @@ import java.util.Date;
 
 import it.fogagnolo.icomp.util.Base64;
 
-public class FileInfo implements Serializable {
+public abstract class FileInfo implements Serializable {
 
-    private static final long             serialVersionUID  = 7930823258457889486L;
+    private static final long             serialVersionUID     = 7930823258457889486L;
 
-    private File                          _fileObj          = null;
-    private String                        _name             = null;
-    private long                          _size             = -1;
-    private long                          _lastMod          = -1;
+    private File                          _fileObj             = null;
+    private String                        _name                = null;
+    private long                          _size                = -1;
+    private long                          _lastMod             = -1;
 
-    private byte[]                        _content          = null;
-    private byte[]                        _fastDigest       = null;
-    private byte[]                        _fullDigest       = null;
-    private boolean                       _contentLoaded    = false;
-    private boolean                       _fastDigestLoaded = false;
-    private boolean                       _fullDigestLoaded = false;
-    private int                           _group            = 0;
-    private boolean                       _selected         = false;
+    private byte[]                        _initialDigest       = null;
+    private byte[]                        _fastDigest          = null;
+    private byte[]                        _fullDigest          = null;
+    private boolean                       _initialDigestLoaded = false;
+    private boolean                       _fastDigestLoaded    = false;
+    private boolean                       _fullDigestLoaded    = false;
 
-    private static final String           ALGORITMO         = "SHA-1";
-    private static final SimpleDateFormat sdf               = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+    private static final String           ALGORITMO            = "SHA-256";
+    private static final SimpleDateFormat sdf                  = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
 
     public FileInfo(File fileObj) {
 
@@ -53,17 +51,32 @@ public class FileInfo implements Serializable {
         return _name;
     }
 
+    public String getFolder() {
+
+        return _fileObj.getParent();
+    }
+
+    /**
+     * Questo metodo restituisce l'initial digest.
+     * 
+     * @return byte[] Il digest. In caso di errore, viene restituito null.
+     */
+    public byte[] getInitialDigest() {
+
+        return _initialDigest;
+    }
+
     /**
      * Questo metodo calcola il digest sui primi n byte del contenuto del file.
      * 
      * @return byte[] Il digest. In caso di errore, viene restituito null.
      */
-    public byte[] getContent() {
+    public void calculateInitialDigest() {
 
-        if (!_contentLoaded) {
-            _contentLoaded = true;
+        if (!_initialDigestLoaded) {
 
             try {
+
                 MessageDigest md = MessageDigest.getInstance(ALGORITMO);
                 md.reset();
 
@@ -73,50 +86,71 @@ public class FileInfo implements Serializable {
                 bis.skip(IntelliCompFinder._offset);
                 int length = bis.read(buffer);
                 if (length != -1) md.update(buffer, 0, length);
-                _content = md.digest();
+                _initialDigest = md.digest();
                 bis.close();
                 fis.close();
+
+                _initialDigestLoaded = true;
 
             } catch (NoSuchAlgorithmException e) {
                 System.out.println("File [" + _fileObj.getAbsolutePath() + "]: errore nel recupero del contenuto");
                 e.printStackTrace();
-                _content = null;
+                _initialDigest = null;
             } catch (FileNotFoundException e) {
                 System.out.println("File [" + _fileObj.getAbsolutePath() + "]: non trovato");
                 e.printStackTrace();
-                _content = null;
+                _initialDigest = null;
             } catch (IOException e) {
                 System.out.println("File [" + _fileObj.getAbsolutePath() + "]: errore nella lettura");
                 e.printStackTrace();
-                _content = null;
+                _initialDigest = null;
             }
         }
-
-        return _content;
     }
 
     /**
-     * Questo metodo calcola il fast digest: .
+     * Questo metodo restituisce il fast digest: .
      * 
      * @return byte[] Il digest. In caso di errore, viene restituito null.
      */
     public byte[] getFastDigest() {
 
+        return _fastDigest;
+    }
+
+    /**
+     * Questo metodo calcola il fast digest: .
+     * 
+     */
+    public void calculateFastDigest() {
+
         if (!_fastDigestLoaded) {
 
             try {
 
-                // se la dimensione del file è inferiore o uguale al buffer, calcolo direttamente il full digest
-                if (_size <= IntelliCompFinder._bufferLength) {
-                    getFullDigest();
-                    _fastDigest = new byte[_fullDigest.length];
-                    System.arraycopy(_fullDigest, 0, _fastDigest, 0, _fullDigest.length);
+                // se la dimensione del file è inferiore o uguale al buffer,
+                // calcolo direttamente il full digest
+                if (_size == 0) {
+
+                    _fastDigest = null;
+
+                } else if (_size <= IntelliCompFinder._bufferLength) {
+
+                    calculateFullDigest();
+                    if (_fullDigest != null) {
+                        _fastDigest = new byte[_fullDigest.length];
+                        System.arraycopy(_fullDigest, 0, _fastDigest, 0, _fullDigest.length);
+                    } else {
+                        _fastDigest = null;
+                    }
+
                 } else {
 
                     MessageDigest md = MessageDigest.getInstance(ALGORITMO);
                     md.reset();
 
-                    // la dimensione del salto tra una lettura e l'altra (e quindi quanti blocchi leggere) è determinato
+                    // la dimensione del salto tra una lettura e l'altra (e
+                    // quindi quanti blocchi leggere) è determinato
                     // in base alla dimensione del file
                     long skip = 0;
                     if (_size < IntelliCompFinder._bufferLength * 20) skip = IntelliCompFinder._bufferLength * 3;
@@ -134,7 +168,8 @@ public class FileInfo implements Serializable {
 
                     // itero per leggere i blocchi
                     long pos = 0;
-                    // System.out.print("fname: " + _name + " size " + _size + ": ");
+                    // System.out.print("fname: " + _name + " size " + _size +
+                    // ": ");
                     // int salti = 0;
                     while (pos + IntelliCompFinder._bufferLength < _size) {
                         bis.skip(pos);
@@ -169,16 +204,23 @@ public class FileInfo implements Serializable {
                 _fastDigest = null;
             }
         }
-
-        return _fastDigest;
     }
 
     /**
-     * Questo metodo calcola il digest sull'intero contenuto del file.
+     * Questo metodo restituisce il full digest: .
      * 
      * @return byte[] Il digest. In caso di errore, viene restituito null.
      */
     public byte[] getFullDigest() {
+
+        return _fullDigest;
+    }
+
+    /**
+     * Questo metodo calcola il full digest: .
+     * 
+     */
+    public void calculateFullDigest() {
 
         if (!_fullDigestLoaded) {
 
@@ -219,33 +261,11 @@ public class FileInfo implements Serializable {
                 _fullDigest = null;
             }
         }
-
-        return _fullDigest;
     }
 
     public long getSize() {
 
         return _size;
-    }
-
-    public void setGroup(int g) {
-
-        _group = g;
-    }
-
-    public int getGroup() {
-
-        return _group;
-    }
-
-    public boolean isSelected() {
-
-        return _selected;
-    }
-
-    public void setSelected(boolean b) {
-
-        _selected = b;
     }
 
     public long getLastMod() {
@@ -257,7 +277,7 @@ public class FileInfo implements Serializable {
 
         StringBuffer sb = new StringBuffer();
         sb.append("[");
-        sb.append("group=").append(_group);
+        // sb.append("group=").append(_group);
 
         try {
             sb.append(",name=").append(_fileObj.getCanonicalPath());
@@ -267,16 +287,13 @@ public class FileInfo implements Serializable {
 
         sb.append(",size=").append(_size);
 
-        String b64 = Base64.encode(_content);
-        if (b64 != null) b64 = b64.trim();
+        String b64 = Base64.encode(_initialDigest);
         sb.append(",content=").append(b64);
 
         b64 = Base64.encode(_fastDigest);
-        if (b64 != null) b64 = b64.trim();
         sb.append(",fastDigest=").append(b64);
 
         b64 = Base64.encode(_fullDigest);
-        if (b64 != null) b64 = b64.trim();
         sb.append(",fullDigest=").append(b64);
 
         sb.append("]");
@@ -288,14 +305,14 @@ public class FileInfo implements Serializable {
 
         StringBuffer sb = new StringBuffer();
 
-        if (_selected) {
-            sb.append("X");
-        } else {
-            sb.append(" ");
-        }
+        // if (_selected) {
+        // sb.append("X");
+        // } else {
+        // sb.append(" ");
+        // }
 
         sb.append(" [");
-        sb.append("group=").append(_group);
+        // sb.append("group=").append(_group);
 
         String lastmod = sdf.format(new Date(_lastMod));
         sb.append(",lastMod=").append(lastmod);
@@ -309,5 +326,23 @@ public class FileInfo implements Serializable {
         sb.append("]");
 
         return new String(sb);
+    }
+
+    public void calculateInitialDigestForce() {
+
+        _initialDigestLoaded = false;
+        calculateInitialDigest();
+    }
+
+    public void calculateFastDigestForce() {
+
+        _fastDigestLoaded = false;
+        calculateFastDigest();
+    }
+
+    public void calculateFullDigestForce() {
+
+        _fullDigestLoaded = false;
+        calculateFullDigest();
     }
 }

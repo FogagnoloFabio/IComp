@@ -15,42 +15,40 @@ public class IntelliCompCleaner {
 
     /*
      * 
-cmd> r
-Exception in thread "main" java.util.ConcurrentModificationException
-    at java.util.AbstractList$Itr.checkForComodification(AbstractList.java:372)
-    at java.util.AbstractList$Itr.next(AbstractList.java:343)
-    at it.fogagnolo.icomp.IntelliCompCleaner.cmdDelete(IntelliCompCleaner.java:320)
-    at it.fogagnolo.icomp.IntelliCompCleaner.elabora(IntelliCompCleaner.java:115)
-    at it.fogagnolo.icomp.IntelliCompCleaner.main(IntelliCompCleaner.java:58)
-
+     * cmd> r Exception in thread "main" java.util.ConcurrentModificationException at
+     * java.util.AbstractList$Itr.checkForComodification(AbstractList.java:372) at
+     * java.util.AbstractList$Itr.next(AbstractList.java:343) at
+     * it.fogagnolo.icomp.IntelliCompCleaner.cmdDelete(IntelliCompCleaner.java:320) at
+     * it.fogagnolo.icomp.IntelliCompCleaner.elabora(IntelliCompCleaner.java:115) at
+     * it.fogagnolo.icomp.IntelliCompCleaner.main(IntelliCompCleaner.java:58)
      */
-    
-    private static final int                             MODULO                         = 100;
+
+    private static final int                                MODULO                         = 100;
 
     // parametri
-    private static boolean                               _swDebug                       = false;
-    private static HashMap<Integer, ArrayList<FileInfo>> _mapFiles                      = null;
-    private static String                                _inputfile                     = null;
-    private static String                                _savefile                      = null;
+    private static boolean                                  _swDebug                       = false;
+    private static HashMap<Integer, ArrayList<FileInfoExt>> _mapFiles                      = null;
+    private static String                                   _inputfile                     = null;
+    private static String                                   _savefile                      = null;
 
-    private static int                                   _num                           = 0;
+    private static int                                      _num                           = 0;
 
-    private static final String                          CMD_LIST                       = "l";
-    private static final String                          CMD_CHECK_SELECTION            = "c";
-    private static final String                          CMD_CHECK_EXISTANCE            = "e";
-    private static final String                          CMD_CHECK_EXISTANCE_AND_REMOVE = "e+r";
-    private static final String                          CMD_SELECT_OLDEST              = "o";
-    private static final String                          CMD_SELECT_PATTERN             = "p";
-    private static final String                          CMD_SELECT_MANUAL              = "m";
-    private static final String                          CMD_REMOVE                     = "r";
-    private static final String                          CMD_MOVE_TO_FOLDER             = "r+f";
-    private static final String                          CMD_HELP                       = "h";
-    private static final String                          CMD_EXIT                       = "x";
+    private static final String                             CMD_LIST                       = "l";
+    private static final String                             CMD_CHECK_SELECTION            = "c";
+    private static final String                             CMD_CHECK_EXISTANCE            = "e";
+    private static final String                             CMD_CHECK_EXISTANCE_AND_REMOVE = "e+r";
+    private static final String                             CMD_SELECT_OLDEST              = "o";
+    private static final String                             CMD_SELECT_PATTERN             = "p";
+    private static final String                             CMD_SELECT_MANUAL              = "m";
+    private static final String                             CMD_REMOVE                     = "r";
+    private static final String                             CMD_MOVE_TO_FOLDER             = "r+f";
+    private static final String                             CMD_HELP                       = "h";
+    private static final String                             CMD_EXIT                       = "x";
 
-    private static final String                          PROMPT_DELIMITER               = "> ";
-    private static final String                          PROMPT_CMD                     = "cmd";
-    private static final String                          PROMPT_SEL                     = "sel";
-    private static final String                          PROMPT_PATTERN                 = "pattern";
+    private static final String                             PROMPT_DELIMITER               = "> ";
+    private static final String                             PROMPT_CMD                     = "cmd";
+    private static final String                             PROMPT_SEL                     = "sel";
+    private static final String                             PROMPT_PATTERN                 = "pattern";
 
     public static void main(String[] args) {
 
@@ -145,11 +143,11 @@ Exception in thread "main" java.util.ConcurrentModificationException
         System.out.println("Subcommands: [0-9] switch selection flag, '" + SUBCMD_NEXT + "' next group, '"
                 + SUBCMD_EXIT + "' end command");
 
-        Iterator<Entry<Integer, ArrayList<FileInfo>>> it = _mapFiles.entrySet().iterator();
+        Iterator<Entry<Integer, ArrayList<FileInfoExt>>> it = _mapFiles.entrySet().iterator();
 
         print(it.next().getValue());
 
-        ArrayList<FileInfo> files = null;
+        ArrayList<FileInfoExt> files = null;
         String subcmd = "";
         while (!SUBCMD_EXIT.equals(subcmd)) {
             subcmd = readLine(PROMPT_SEL);
@@ -168,7 +166,7 @@ Exception in thread "main" java.util.ConcurrentModificationException
             try {
                 int num = Integer.parseInt(subcmd);
                 if (num > 0 && num <= files.size()) {
-                    FileInfo fi = files.get(num - 1);
+                    FileInfoExt fi = files.get(num - 1);
                     fi.setSelected(!fi.isSelected());
                 }
             } catch (Throwable t) {
@@ -177,10 +175,10 @@ Exception in thread "main" java.util.ConcurrentModificationException
         }
     }
 
-    private static void print(ArrayList<FileInfo> files) {
+    private static void print(ArrayList<FileInfoExt> files) {
 
         int i = 1;
-        for (FileInfo fi : files) {
+        for (FileInfoExt fi : files) {
             System.out.println("  " + i + ": " + fi.toStringCleaner());
             i++;
         }
@@ -191,14 +189,14 @@ Exception in thread "main" java.util.ConcurrentModificationException
 
         int selected = 0;
 
-        Iterator<Entry<Integer, ArrayList<FileInfo>>> it = _mapFiles.entrySet().iterator();
+        Iterator<Entry<Integer, ArrayList<FileInfoExt>>> it = _mapFiles.entrySet().iterator();
         while (it.hasNext()) {
-            ArrayList<FileInfo> files = it.next().getValue();
+            ArrayList<FileInfoExt> files = it.next().getValue();
 
             long lastMod = -1;
-            FileInfo lastFile = null;
+            FileInfoExt lastFile = null;
 
-            for (FileInfo fi : files) {
+            for (FileInfoExt fi : files) {
                 if (lastMod == -1 || fi.getLastMod() < lastMod) {
                     lastMod = fi.getLastMod();
                     lastFile = fi;
@@ -221,10 +219,10 @@ Exception in thread "main" java.util.ConcurrentModificationException
 
         if (pattern != null && !pattern.trim().equals("")) {
             int selected = 0;
-            Iterator<Entry<Integer, ArrayList<FileInfo>>> it = _mapFiles.entrySet().iterator();
+            Iterator<Entry<Integer, ArrayList<FileInfoExt>>> it = _mapFiles.entrySet().iterator();
             while (it.hasNext()) {
-                ArrayList<FileInfo> files = it.next().getValue();
-                for (FileInfo fi : files) {
+                ArrayList<FileInfoExt> files = it.next().getValue();
+                for (FileInfoExt fi : files) {
                     if (!fi.isSelected() && fi.getName().contains(pattern)) {
                         fi.setSelected(true);
                         ++selected;
@@ -246,20 +244,20 @@ Exception in thread "main" java.util.ConcurrentModificationException
         System.out.println("Elenco gruppi con tutti gli item selezionati:");
         boolean found = false;
 
-        Iterator<Entry<Integer, ArrayList<FileInfo>>> it = _mapFiles.entrySet().iterator();
+        Iterator<Entry<Integer, ArrayList<FileInfoExt>>> it = _mapFiles.entrySet().iterator();
         while (it.hasNext()) {
-            Entry<Integer, ArrayList<FileInfo>> key = it.next();
-            ArrayList<FileInfo> files = key.getValue();
+            Entry<Integer, ArrayList<FileInfoExt>> key = it.next();
+            ArrayList<FileInfoExt> files = key.getValue();
 
             if (files.size() > 0) {
                 boolean allSelected = true;
-                for (FileInfo fi : files) {
+                for (FileInfoExt fi : files) {
                     if (!fi.isSelected()) allSelected = false;
                 }
 
                 if (allSelected) {
                     found = true;
-                    for (FileInfo fi : files) {
+                    for (FileInfoExt fi : files) {
                         System.out.println("  " + fi.toStringCleaner());
                     }
                 }
@@ -279,11 +277,11 @@ Exception in thread "main" java.util.ConcurrentModificationException
         System.out.println("Elenco file inesistenti:");
         boolean found = false;
 
-        Iterator<Entry<Integer, ArrayList<FileInfo>>> it = _mapFiles.entrySet().iterator();
+        Iterator<Entry<Integer, ArrayList<FileInfoExt>>> it = _mapFiles.entrySet().iterator();
         while (it.hasNext()) {
-            ArrayList<FileInfo> files = it.next().getValue();
+            ArrayList<FileInfoExt> files = it.next().getValue();
 
-            for (FileInfo fi : files) {
+            for (FileInfoExt fi : files) {
                 if (!fi.getFileObj().exists()) {
                     System.out.println("  " + fi.toStringCleaner());
                     if (remove) files.remove(fi);
@@ -305,10 +303,10 @@ Exception in thread "main" java.util.ConcurrentModificationException
         System.out.println("Rimozione gruppi vuoti:");
         int num = 0;
 
-        Iterator<Entry<Integer, ArrayList<FileInfo>>> it = _mapFiles.entrySet().iterator();
+        Iterator<Entry<Integer, ArrayList<FileInfoExt>>> it = _mapFiles.entrySet().iterator();
         while (it.hasNext()) {
-            Entry<Integer, ArrayList<FileInfo>> key = it.next();
-            ArrayList<FileInfo> files = key.getValue();
+            Entry<Integer, ArrayList<FileInfoExt>> key = it.next();
+            ArrayList<FileInfoExt> files = key.getValue();
 
             if (files.size() <= 1) {
                 _mapFiles.remove(key);
@@ -324,12 +322,12 @@ Exception in thread "main" java.util.ConcurrentModificationException
 
         int num = 0;
 
-        Iterator<Entry<Integer, ArrayList<FileInfo>>> it = _mapFiles.entrySet().iterator();
+        Iterator<Entry<Integer, ArrayList<FileInfoExt>>> it = _mapFiles.entrySet().iterator();
         while (it.hasNext()) {
-            Entry<Integer, ArrayList<FileInfo>> key = it.next();
-            ArrayList<FileInfo> files = key.getValue();
+            Entry<Integer, ArrayList<FileInfoExt>> key = it.next();
+            ArrayList<FileInfoExt> files = key.getValue();
 
-            for (FileInfo fi : files) {
+            for (FileInfoExt fi : files) {
                 if (fi.isSelected()) {
                     fi.toStringCleaner();
                     fi.getFileObj().delete();
@@ -363,12 +361,12 @@ Exception in thread "main" java.util.ConcurrentModificationException
 
             int num = 0;
 
-            Iterator<Entry<Integer, ArrayList<FileInfo>>> it = _mapFiles.entrySet().iterator();
+            Iterator<Entry<Integer, ArrayList<FileInfoExt>>> it = _mapFiles.entrySet().iterator();
             while (it.hasNext()) {
-                Entry<Integer, ArrayList<FileInfo>> key = it.next();
-                ArrayList<FileInfo> files = key.getValue();
+                Entry<Integer, ArrayList<FileInfoExt>> key = it.next();
+                ArrayList<FileInfoExt> files = key.getValue();
 
-                for (FileInfo fi : files) {
+                for (FileInfoExt fi : files) {
                     if (fi.isSelected()) {
                         fi.toStringCleaner();
                         fi.getFileObj().renameTo(folder);
@@ -386,10 +384,10 @@ Exception in thread "main" java.util.ConcurrentModificationException
 
         int items = 0;
 
-        Iterator<Entry<Integer, ArrayList<FileInfo>>> it = _mapFiles.entrySet().iterator();
+        Iterator<Entry<Integer, ArrayList<FileInfoExt>>> it = _mapFiles.entrySet().iterator();
         while (it.hasNext()) {
-            ArrayList<FileInfo> files = it.next().getValue();
-            for (FileInfo fi : files) {
+            ArrayList<FileInfoExt> files = it.next().getValue();
+            for (FileInfoExt fi : files) {
                 items++;
                 System.out.println("  Item " + items + ": " + fi.toStringCleaner());
             }
